@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import ParametrosPage from './pages/ParametrosPage';
 import PrivateRoute from './components/PrivateRoute';
+import AppShell from './components/AppShell';
 
 function App() {
   return (
@@ -11,9 +13,9 @@ function App() {
           path="/"
           element={
             <PrivateRoute>
-              <div style={{ padding: '2rem' }}>
-                <h1>MS Practica — Gestión de Parámetros</h1>
-              </div>
+              <AppShell>
+                <ParametrosPage />
+              </AppShell>
             </PrivateRoute>
           }
         />

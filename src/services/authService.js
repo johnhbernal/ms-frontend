@@ -19,6 +19,17 @@ export const getToken = () => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
+export const getUsername = () => {
+  const token = getToken();
+  if (!token) return '';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || '';
+  } catch {
+    return '';
+  }
+};
+
 export const logout = () => {
   localStorage.removeItem('token');
   sessionStorage.removeItem('token');
