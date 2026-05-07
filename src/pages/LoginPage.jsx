@@ -31,7 +31,7 @@ function LoginPage() {
     setErrorMsg('');
     try {
       const res = await login(data.username, data.password);
-      saveToken(res.data.token, data.remember);
+      saveToken(res.data.sessionToken, data.remember);
       navigate('/');
     } catch (err) {
       const msg = err.response?.data?.description || 'Error de conexión';

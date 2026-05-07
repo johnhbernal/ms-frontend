@@ -10,8 +10,10 @@ export const login = async (username, password) => {
 export const saveToken = (token, remember) => {
   if (remember) {
     localStorage.setItem('token', token);
+    sessionStorage.removeItem('token');
   } else {
     sessionStorage.setItem('token', token);
+    localStorage.removeItem('token');
   }
 };
 
