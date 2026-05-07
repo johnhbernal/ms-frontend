@@ -13,11 +13,57 @@
 
 # misc
 .DS_Store
+
+# env (broader — never commit secrets)
+.env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# OS
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor / temp / backup
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.orig
+
+# Build artifacts (additional)
+/dist
+/out
+.next/
+.nuxt/
+.parcel-cache/
+*.tsbuildinfo
+/storybook-static
+
+# AI/agent tooling
+.claude/
+.superpowers/
+docs/superpowers/
+CLAUDE.md
