@@ -1,29 +1,30 @@
 import axios from 'axios';
-import { getToken } from './authService';
+import { getToken, logout } from './authService';
 
 const BASE_URL = 'http://localhost:8082/api';
 
-const authHeaders = () => ({
-  headers: { Authorization: `Bearer ${getToken()}` },
+const client = axios.create({ baseURL: BASE_URL });
+
+client.interceptors.request.use((config) => {
+  config.headers.Authorization = `Bearer ${getToken()}`;
+  return config;
 });
 
-export const getParametrosActivos = () =>
-  axios.get(`${BASE_URL}/parametros/activos`, authHeaders());
+client.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      logout();
+      window.location.href = '/login';
+    }
+    return Promise.reject(err);
+  }
+);
 
-export const getParametros = () =>
-  axios.get(`${BASE_URL}/parametros`, authHeaders());
-
-export const getParametroById = (id) =>
-  axios.get(`${BASE_URL}/parametros/${id}`, authHeaders());
-
-export const buscarPorNombre = (nombre) =>
-  axios.get(`${BASE_URL}/parametros/buscar`, { ...authHeaders(), params: { nombre } });
-
-export const createParametro = (parametro) =>
-  axios.post(`${BASE_URL}/parametros`, parametro, authHeaders());
-
-export const updateParametro = (id, parametro) =>
-  axios.put(`${BASE_URL}/parametros/${id}`, parametro, authHeaders());
-
-export const deleteParametro = (id) =>
-  axios.delete(`${BASE_URL}/parametros/${id}`, authHeaders());
+export const getParametrosActivos = () => client.get('/parametros/activos');
+export const getParametros = ()        => client.get('/parametros');
+export const getParametroById = (id)   => client.get(`/parametros/${id}`);
+export const buscarPorNombre = (nombre) => client.get('/parametros/buscar', { params: { nombre } });
+export const createParametro = (parametro)        => client.post('/parametros', parametro);
+export const updateParametro = (id, parametro)    => client.put(`/parametros/${id}`, parametro);
+export const deleteParametro = (id)               => client.delete(`/parametros/${id}`);
