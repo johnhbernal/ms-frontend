@@ -6,10 +6,10 @@ import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { createParametro, updateParametro } from '../services/practicaService';
 
 const schema = yup.object({
-  parameterName: yup.string().required('El nombre es obligatorio'),
+  parameterName:     yup.string().required('El nombre es obligatorio'),
   parameterCategory: yup.string().required('La categoría es obligatoria'),
-  value: yup.string().required('El valor es obligatorio'),
-  status: yup.string().required().oneOf(['A', 'I']),
+  value:             yup.string().required('El valor es obligatorio'),
+  status:            yup.string().required().oneOf(['A', 'I']),
 });
 
 function ParametroModal({ show, onHide, onSaved, parametro }) {
@@ -27,10 +27,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
       reset(
         parametro
           ? {
-              parameterName: parametro.parameterName,
+              parameterName:     parametro.parameterName,
               parameterCategory: parametro.parameterCategory,
-              value: parametro.value,
-              status: parametro.status,
+              value:             parametro.value,
+              status:            parametro.status,
             }
           : { parameterName: '', parameterCategory: '', value: '', status: 'A' }
       );
@@ -55,21 +55,25 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton>
-        <Modal.Title style={{ color: '#1e3a5f', fontWeight: 700 }}>
-          {isEdit ? 'Editar Parámetro' : 'Nuevo Parámetro'}
+    <Modal show={show} onHide={onHide} centered size="sm">
+      <Modal.Header closeButton style={{ padding: '18px 22px' }}>
+        <Modal.Title style={{ fontSize: 15, fontWeight: 700, color: 'var(--slate-900)', letterSpacing: '-0.01em' }}>
+          {isEdit ? 'Editar parámetro' : 'Nuevo parámetro'}
         </Modal.Title>
       </Modal.Header>
+
       <Modal.Body>
         <Form id="parametro-form" onSubmit={handleSubmit(onSubmit)}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
             <Form.Group>
-              <Form.Label>Nombre *</Form.Label>
+              <Form.Label>Nombre <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 type="text"
+                placeholder="Ej. TIEMPO_SESION"
                 isInvalid={!!errors.parameterName}
                 disabled={saving}
+                autoFocus
                 {...register('parameterName')}
               />
               <Form.Control.Feedback type="invalid">
@@ -78,9 +82,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Categoría *</Form.Label>
+              <Form.Label>Categoría <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 type="text"
+                placeholder="Ej. SISTEMA"
                 isInvalid={!!errors.parameterCategory}
                 disabled={saving}
                 {...register('parameterCategory')}
@@ -91,9 +96,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Valor *</Form.Label>
+              <Form.Label>Valor <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 type="text"
+                placeholder="Ej. 3600"
                 isInvalid={!!errors.value}
                 disabled={saving}
                 {...register('value')}
@@ -110,26 +116,24 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
                 <option value="I">Inactivo</option>
               </Form.Select>
             </Form.Group>
+
           </div>
+
           {apiError && (
-            <Alert variant="danger" className="mt-3 py-2">{apiError}</Alert>
+            <Alert variant="danger" className="mt-4 mb-0">{apiError}</Alert>
           )}
         </Form>
       </Modal.Body>
+
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide} disabled={saving}>
           Cancelar
         </Button>
-        <Button
-          type="submit"
-          form="parametro-form"
-          disabled={saving}
-          style={{ background: '#2563eb', border: 'none' }}
-        >
+        <Button variant="primary" type="submit" form="parametro-form" disabled={saving}>
           {saving ? (
-            <><Spinner size="sm" className="me-2" />Guardando...</>
+            <><Spinner size="sm" animation="border" className="me-2" />Guardando…</>
           ) : (
-            'Guardar'
+            isEdit ? 'Guardar cambios' : 'Crear parámetro'
           )}
         </Button>
       </Modal.Footer>

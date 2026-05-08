@@ -1,13 +1,242 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --blue-50:   #eff6ff;
+  --blue-100:  #dbeafe;
+  --blue-200:  #bfdbfe;
+  --blue-600:  #2563eb;
+  --blue-700:  #1d4ed8;
+
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  --green-50:  #f0fdf4;
+  --green-100: #dcfce7;
+  --green-700: #15803d;
+
+  --red-50:    #fff1f2;
+  --red-100:   #fee2e2;
+  --red-600:   #dc2626;
+  --red-700:   #b91c1c;
+
+  --amber-50:  #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-700: #b45309;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius:    8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+
+  --t-fast: 120ms ease;
+  --t:      180ms ease;
+  --t-slow: 300ms ease;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--slate-900);
+  background: var(--slate-50);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Bootstrap form overrides ───────────────────────────────── */
+
+.form-control,
+.form-select {
+  font-family: inherit !important;
+  font-size: 14px !important;
+  color: var(--slate-900) !important;
+  background: white !important;
+  border: 1px solid var(--slate-200) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 9px 12px !important;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.form-control::placeholder { color: var(--slate-400) !important; }
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--blue-600) !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12), var(--shadow-xs) !important;
+  outline: none !important;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--red-600) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.12), var(--shadow-xs) !important;
+}
+
+.form-label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--slate-700) !important;
+  margin-bottom: 5px !important;
+}
+
+.invalid-feedback { font-size: 12px !important; }
+
+/* ── Bootstrap button overrides ─────────────────────────────── */
+
+.btn {
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 14px !important;
+  transition: background var(--t-fast), border-color var(--t-fast),
+              box-shadow var(--t-fast), transform var(--t-fast) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.btn:active { transform: scale(0.97) !important; }
+.btn:disabled { opacity: 0.55 !important; cursor: not-allowed !important; }
+
+.btn-primary {
+  background: var(--blue-600) !important;
+  border-color: var(--blue-600) !important;
+  box-shadow: 0 1px 2px rgba(37,99,235,0.20) !important;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--blue-700) !important;
+  border-color: var(--blue-700) !important;
+  box-shadow: 0 3px 8px rgba(37,99,235,0.28) !important;
+}
+
+.btn-outline-primary {
+  color: var(--slate-700) !important;
+  border-color: var(--slate-200) !important;
+  background: white !important;
+}
+.btn-outline-primary:hover {
+  background: var(--slate-50) !important;
+  border-color: var(--slate-300) !important;
+  color: var(--blue-600) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.btn-secondary {
+  background: var(--slate-100) !important;
+  border-color: var(--slate-200) !important;
+  color: var(--slate-700) !important;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--slate-200) !important;
+  border-color: var(--slate-300) !important;
+  color: var(--slate-900) !important;
+}
+
+/* ── Table overrides ─────────────────────────────────────────── */
+
+.table {
+  margin-bottom: 0 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.table > thead > tr > th {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  padding: 11px 16px !important;
+  border-bottom: none !important;
+  white-space: nowrap !important;
+}
+
+.table > tbody > tr > td {
+  font-size: 13px !important;
+  padding: 13px 16px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid var(--slate-100) !important;
+  transition: background var(--t-fast) !important;
+}
+
+.table > tbody > tr:last-child > td { border-bottom: none !important; }
+
+.table-hover > tbody > tr:hover > td { background: var(--slate-50) !important; }
+
+/* ── Modal overrides ─────────────────────────────────────────── */
+
+.modal-content {
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  overflow: hidden !important;
+}
+
+.modal-header {
+  background: white !important;
+  border-bottom: 1px solid var(--slate-100) !important;
+  padding: 20px 24px !important;
+}
+
+.modal-body { padding: 20px 24px !important; }
+.modal-footer {
+  border-top: 1px solid var(--slate-100) !important;
+  padding: 16px 24px !important;
+  gap: 8px !important;
+}
+
+/* ── Alert overrides ─────────────────────────────────────────── */
+
+.alert {
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  padding: 10px 14px !important;
+}
+
+.alert-danger {
+  background: var(--red-50) !important;
+  color: var(--red-700) !important;
+}
+
+.alert-link {
+  color: inherit !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+
+.spinner-border { border-width: 2px !important; }
+
+/* ── Custom scrollbar ─────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--slate-300); }
