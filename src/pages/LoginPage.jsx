@@ -46,7 +46,11 @@ function LoginPage() {
       saveToken(res.data.sessionToken, data.remember);
       navigate('/');
     } catch (err) {
-      setErrorMsg(err.response?.data?.description || 'Error de conexión');
+      setErrorMsg(
+        err.response?.status < 500
+          ? err.response?.data?.description || 'Error de conexión'
+          : 'Error de conexión'
+      );
     } finally {
       setLoading(false);
     }

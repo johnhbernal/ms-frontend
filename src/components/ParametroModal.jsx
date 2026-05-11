@@ -48,7 +48,11 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
       }
       onSaved();
     } catch (err) {
-      setApiError(err.response?.data?.description || 'Error al guardar');
+      setApiError(
+        err.response?.status < 500
+          ? err.response?.data?.description || 'Error al guardar'
+          : 'Error al guardar'
+      );
     } finally {
       setSaving(false);
     }

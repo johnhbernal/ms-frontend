@@ -95,6 +95,9 @@ function ActionButton({ onClick, icon, label, danger }) {
   );
 }
 
+const safeErr = (err, msg) =>
+  err.response?.status < 500 ? err.response?.data?.description || msg : msg;
+
 function ParametrosPage() {
   const [parametros, setParametros] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +113,7 @@ function ParametrosPage() {
       const res = await getParametros();
       setParametros(res.data.data || []);
     } catch (err) {
-      setError(err.response?.data?.description || 'Error al cargar parámetros');
+      setError(safeErr(err, 'Error al cargar parámetros'));
     } finally {
       setLoading(false);
     }
@@ -128,7 +131,7 @@ function ParametrosPage() {
         : await getParametros();
       setParametros(res.data.data || []);
     } catch (err) {
-      setError(err.response?.data?.description || 'Error en la búsqueda');
+      setError(safeErr(err, 'Error en la búsqueda'));
     } finally {
       setLoading(false);
     }
@@ -140,7 +143,7 @@ function ParametrosPage() {
       await deleteParametro(param.parameterCode);
       await loadParametros();
     } catch (err) {
-      setError(err.response?.data?.description || 'Error al desactivar');
+      setError(safeErr(err, 'Error al desactivar'));
     }
   };
 

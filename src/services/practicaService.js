@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken, logout } from './authService';
 
-const BASE_URL = 'http://localhost:8082/api';
+const BASE_URL = process.env.REACT_APP_PRACTICA_API_URL || 'http://localhost:8082/api';
 
 const client = axios.create({ baseURL: BASE_URL });
 
@@ -15,7 +15,7 @@ client.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       logout();
-      window.location.href = '/login';
+      window.location.replace('/login');
     }
     return Promise.reject(err);
   }

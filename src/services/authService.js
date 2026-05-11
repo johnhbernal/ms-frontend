@@ -1,24 +1,18 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8081';
+const BASE_URL = process.env.REACT_APP_AUTH_API_URL || 'http://localhost:8081';
 
 export const login = async (username, password) => {
   const response = await axios.post(`${BASE_URL}/api/auth/login`, { username, password });
   return response.data;
 };
 
-export const saveToken = (token, remember) => {
-  if (remember) {
-    localStorage.setItem('token', token);
-    sessionStorage.removeItem('token');
-  } else {
-    sessionStorage.setItem('token', token);
-    localStorage.removeItem('token');
-  }
+export const saveToken = (token) => {
+  sessionStorage.setItem('token', token);
 };
 
 export const getToken = () => {
-  return localStorage.getItem('token') || sessionStorage.getItem('token');
+  return sessionStorage.getItem('token');
 };
 
 export const getUsername = () => {
@@ -33,6 +27,11 @@ export const getUsername = () => {
 };
 
 export const logout = () => {
-  localStorage.removeItem('token');
+  const token = getToken();
+  if (token) {
+    axios.post(`${BASE_URL}/api/auth/logout`, null, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(() => {});
+  }
   sessionStorage.removeItem('token');
 };
