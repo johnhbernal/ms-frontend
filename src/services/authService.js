@@ -31,7 +31,7 @@ export const logout = () => {
   if (token) {
     axios.post(`${BASE_URL}/api/auth/logout`, null, {
       headers: { Authorization: `Bearer ${token}` }
-    }).catch(() => {});
+    }).catch((err) => { console.warn('Server-side logout failed (session cleared locally):', err?.message); });
   }
   sessionStorage.removeItem('token');
 };

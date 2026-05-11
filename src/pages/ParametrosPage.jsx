@@ -123,11 +123,16 @@ function ParametrosPage() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    const trimmed = searchTerm.trim();
+    if (trimmed.length > 50) {
+      setError('El término de búsqueda no puede superar 50 caracteres');
+      return;
+    }
+    setLoading(true);
     try {
-      const res = searchTerm.trim()
-        ? await buscarPorNombre(searchTerm.trim())
+      const res = trimmed
+        ? await buscarPorNombre(trimmed)
         : await getParametros();
       setParametros(res.data.data || []);
     } catch (err) {

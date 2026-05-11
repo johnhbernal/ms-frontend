@@ -43,7 +43,7 @@ function LoginPage() {
     setErrorMsg('');
     try {
       const res = await login(data.username, data.password);
-      saveToken(res.data.sessionToken, data.remember);
+      saveToken(res.data.sessionToken);
       navigate('/');
     } catch (err) {
       setErrorMsg(
