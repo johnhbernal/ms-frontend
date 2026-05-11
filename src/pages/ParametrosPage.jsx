@@ -129,6 +129,10 @@ function ParametrosPage() {
       setError('El término de búsqueda no puede superar 50 caracteres');
       return;
     }
+    if (trimmed.length > 0 && !/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
+      setError('El término de búsqueda contiene caracteres no permitidos');
+      return;
+    }
     setLoading(true);
     try {
       const res = trimmed

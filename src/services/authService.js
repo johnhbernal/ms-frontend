@@ -26,6 +26,17 @@ export const getUsername = () => {
   }
 };
 
+export const isTokenExpired = () => {
+  const token = getToken();
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return typeof payload.exp === 'number' && Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+};
+
 export const logout = () => {
   const token = getToken();
   if (token) {
