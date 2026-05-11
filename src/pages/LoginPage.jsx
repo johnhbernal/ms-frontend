@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
-import { login, saveToken } from '../services/authService';
+import { login, saveToken, saveExpiresAt } from '../services/authService';
 
 const schema = yup.object({
   username: yup.string().required('El usuario es obligatorio'),
@@ -43,7 +43,9 @@ function LoginPage() {
     setErrorMsg('');
     try {
       const res = await login(data.username, data.password);
+      sessionStorage.clear();
       saveToken(res.data.sessionToken);
+      if (res.data.expiresAtMs) saveExpiresAt(res.data.expiresAtMs);
       navigate('/');
     } catch (err) {
       setErrorMsg(

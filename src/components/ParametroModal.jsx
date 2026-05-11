@@ -6,9 +6,9 @@ import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { createParametro, updateParametro } from '../services/practicaService';
 
 const schema = yup.object({
-  parameterName:     yup.string().required('El nombre es obligatorio'),
-  parameterCategory: yup.string().required('La categoría es obligatoria'),
-  value:             yup.string().required('El valor es obligatorio'),
+  parameterName:     yup.string().required('El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
+  parameterCategory: yup.string().required('La categoría es obligatoria').max(50, 'Máximo 50 caracteres'),
+  value:             yup.string().required('El valor es obligatorio').max(500, 'Máximo 500 caracteres'),
   status:            yup.string().required().oneOf(['A', 'I']),
 });
 

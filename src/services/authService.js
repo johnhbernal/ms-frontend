@@ -42,7 +42,28 @@ export const logout = () => {
   if (token) {
     axios.post(`${BASE_URL}/api/auth/logout`, null, {
       headers: { Authorization: `Bearer ${token}` }
-    }).catch((err) => { console.warn('Server-side logout failed (session cleared locally):', err?.message); });
+    }).catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Server-side logout failed (session cleared locally):', err?.message);
+      }
+    });
   }
   sessionStorage.removeItem('token');
+  sessionStorage.removeItem('expiresAtMs');
+};
+
+export const saveExpiresAt = (ms) => sessionStorage.setItem('expiresAtMs', String(ms));
+export const getExpiresAt  = ()   => {
+  const v = sessionStorage.getItem('expiresAtMs');
+  return v ? Number(v) : null;
+};
+
+export const renewToken = async () => {
+  const token = getToken();
+  if (!token) throw new Error('No token');
+  const response = await axios.post(
+    `${BASE_URL}/api/auth/renew`,
+    { sessionToken: token }
+  );
+  return response.data;
 };
