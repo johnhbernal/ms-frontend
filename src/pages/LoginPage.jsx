@@ -8,10 +8,7 @@ import { login, saveToken, saveExpiresAt } from '../services/authService';
 
 const schema = yup.object({
   username: yup.string().required('El usuario es obligatorio'),
-  password: yup
-    .string()
-    .required('La contraseña es obligatoria')
-    .min(6, 'Mínimo 6 caracteres'),
+  password: yup.string().required('La contraseña es obligatoria').min(8, 'Mínimo 8 caracteres'),
 });
 
 const EyeIcon = ({ open }) =>
@@ -145,9 +142,10 @@ function LoginPage() {
           </div>
 
           <Form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-4" controlId="username">
               <Form.Label>Usuario</Form.Label>
               <Form.Control
+                id="username"
                 type="text"
                 placeholder="Ej. admin"
                 autoComplete="username"
@@ -161,10 +159,11 @@ function LoginPage() {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-4" controlId="password">
               <Form.Label>Contraseña</Form.Label>
               <div style={{ position: 'relative' }}>
                 <Form.Control
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   autoComplete="current-password"
@@ -196,17 +195,6 @@ function LoginPage() {
                 </Form.Control.Feedback>
               </div>
             </Form.Group>
-
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-              <Form.Check
-                type="checkbox"
-                id="remember"
-                label="Recordarme"
-                disabled={loading}
-                style={{ fontSize: '13px', color: 'var(--slate-600)' }}
-                {...register('remember')}
-              />
-            </div>
 
             {errorMsg && (
               <Alert variant="danger" className="mb-4">

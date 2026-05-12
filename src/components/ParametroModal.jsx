@@ -70,9 +70,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
         <Form id="parametro-form" onSubmit={handleSubmit(onSubmit)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            <Form.Group>
+            <Form.Group controlId="parameterName">
               <Form.Label>Nombre <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
+                id="parameterName"
                 type="text"
                 placeholder="Ej. TIEMPO_SESION"
                 isInvalid={!!errors.parameterName}
@@ -85,9 +86,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group>
+            <Form.Group controlId="parameterCategory">
               <Form.Label>Categoría <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
+                id="parameterCategory"
                 type="text"
                 placeholder="Ej. SISTEMA"
                 isInvalid={!!errors.parameterCategory}
@@ -99,9 +101,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group>
+            <Form.Group controlId="value">
               <Form.Label>Valor <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
+                id="value"
                 type="text"
                 placeholder="Ej. 3600"
                 isInvalid={!!errors.value}
