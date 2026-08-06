@@ -98,6 +98,15 @@ function ActionButton({ onClick, icon, label, danger }) {
 const safeErr = (err, msg) =>
   err.response?.status < 500 ? err.response?.data?.description || msg : msg;
 
+/** OWASP A02/A04 — never render master-token / secret-like values in clear text */
+function displayParamValue(name, value) {
+  const n = (name || '').toUpperCase();
+  if (n.startsWith('MASTER_TOKEN') || n.includes('SECRET') || n.includes('PASSWORD') || n.includes('API_KEY')) {
+    return '•••••••• (oculto)';
+  }
+  return value ?? '';
+}
+
 function ParametrosPage() {
   const [parametros, setParametros] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -271,7 +280,7 @@ function ParametrosPage() {
                     </span>
                   </td>
                   <td style={{ color: 'var(--slate-600)', fontFamily: 'monospace', fontSize: 12 }}>
-                    {p.value}
+                    {displayParamValue(p.parameterName, p.value)}
                   </td>
                   <td><StatusBadge status={p.status} /></td>
                   <td style={{ textAlign: 'right' }}>
