@@ -76,8 +76,21 @@ CRA’s Jest does not resolve RR7 `exports` cleanly. `package.json` maps:
 
 ## Agent checklist
 
-1. Keep `package-lock.json` in sync after dependency changes.
+1. Keep `package-lock.json` in sync after dependency changes — **always** run `npm ci` locally before push (parity with GHA).
 2. Do not skip hooks (`--no-verify`) in CI or commits.
 3. Fail the job on test or build errors — no `continue-on-error` for the main gate.
 4. Prefer Node 20 or 22 LTS in CI even if developers use Node 24 locally.
 5. Run `npm run ci:local` (or Jest + build + non-backend Playwright) before push.
+6. **After every push:** open the Actions URL. Red → read logs → classify → fix → local verify → push.
+
+## Distinguishing failure types
+
+| Symptom | Cause | Action |
+|---------|--------|--------|
+| *job was not acquired by Runner…* | GitHub hosted-runner queue — not code | `gh run rerun <id> --failed` |
+| `npm ci` / Missing `yaml@2.9.0` (or lock out of sync) | Lockfile incomplete vs Node 22 npm | `npm install` + commit `package-lock.json`; pin peer `yaml@2.9.0` if needed |
+| Jest/build/Playwright assertion fail | Real product/test bug | Fix locally with `ci:local` |
+
+## Known lockfile note
+
+CRA 5 pulls `tailwindcss` → `postcss-load-config@6` which peer-depends on `yaml@^2.4.2`. Direct `devDependency` `yaml@2.9.0` keeps `npm ci` green on GitHub Node 22.

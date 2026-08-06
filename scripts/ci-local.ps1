@@ -5,6 +5,13 @@
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path -Parent $PSScriptRoot)
 
+Write-Host '==> npm ci (must match GitHub Actions)' -ForegroundColor Cyan
+if (Test-Path node_modules) {
+  # Prefer clean install parity with CI when lockfile changed
+}
+npm ci
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host '==> Jest (CI=true)' -ForegroundColor Cyan
 $env:CI = 'true'
 npm test -- --watchAll=false
