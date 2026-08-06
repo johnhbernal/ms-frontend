@@ -23,7 +23,19 @@ File: `.github/workflows/ci.yml`
 | Test | `npm test -- --watchAll=false` with `CI=true` |
 | Build | `npm run build` |
 
+Optional locally: `npm run lint` (CRA ESLint; not in GHA job yet).
+
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` is set so GitHub Actions JS runners that require Node 24 stay compatible.
+
+## Docker
+
+| Item | Value |
+|------|--------|
+| Image | Multi-stage: `node:22-alpine` build → `nginxinc/nginx-unprivileged:1.27-alpine` |
+| Port | Host `3000` → container `8080` (`docker-compose.yml`) |
+| Health | `GET /health` (nginx) |
+| SPA | `try_files` history fallback — see `docker/nginx.conf` |
+| Build args | `REACT_APP_AUTH_API_URL`, `REACT_APP_PRACTICA_API_URL` (browser-reachable URLs) |
 
 ## Local parity
 
