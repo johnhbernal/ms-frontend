@@ -1,6 +1,8 @@
-import { useNavigate } from 'react-router-dom';
-import { logout, getUsername } from '../services/authService';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { logout, getUsername, isAdminNavVisible, canSeeInventory } from '../services/authService';
 import { useSessionRenew } from '../hooks/useSessionRenew';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const ShieldIcon = () => (
   <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -38,6 +40,7 @@ const CheckIcon = () => (
 );
 
 function SessionBanner({ phase, secLeft }) {
+  const { t } = useTranslation();
   if (phase === 'ok' || phase === 'renewing') return null;
   const isWarning = phase === 'warning';
   return (
@@ -54,14 +57,32 @@ function SessionBanner({ phase, secLeft }) {
       flexShrink: 0,
     }}>
       {isWarning ? <WarnIcon /> : <CheckIcon />}
-      {isWarning ? `Tu sesión expira en ${secLeft}s` : 'Sesión renovada'}
+      {isWarning ? t('session.expiresIn', { seconds: secLeft }) : t('session.renewed')}
     </div>
   );
 }
 
+const UsersIcon = () => (
+  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const FolderIcon = () => (
+  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 function AppShell({ children }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { phase, secLeft } = useSessionRenew();
+  const showAdmin = isAdminNavVisible();
+  const showInventory = canSeeInventory();
+  const path = location.pathname;
 
   const handleLogout = () => {
     logout();
@@ -85,11 +106,12 @@ function AppShell({ children }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <ShieldIcon />
           <span style={{ color: 'white', fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em' }}>
-            MS Practica
+            {t('app.name')}
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, color: 'white' }}>
+          <LanguageSwitcher compact />
           <div style={{
             fontSize: 12, color: 'var(--slate-400)',
             background: 'rgba(255,255,255,0.06)',
@@ -97,7 +119,7 @@ function AppShell({ children }) {
             padding: '3px 10px',
             border: '1px solid rgba(255,255,255,0.08)',
           }}>
-            {getUsername()}
+            {t('nav.signedInAs')}: {getUsername()}
           </div>
 
           <button
@@ -127,7 +149,7 @@ function AppShell({ children }) {
             }}
           >
             <LogOutIcon />
-            Salir
+            {t('nav.logout')}
           </button>
         </div>
       </header>
@@ -142,18 +164,34 @@ function AppShell({ children }) {
           flexShrink: 0,
           paddingTop: 16,
         }}>
-          <div style={{
-            padding: '0 16px 8px',
-            fontSize: 10,
-            fontWeight: 600,
-            color: 'var(--slate-500)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}>
-            Menú
-          </div>
-
-          <NavItem icon={<SettingsIcon />} label="Parámetros" active />
+          <NavItem
+            icon={<SettingsIcon />}
+            label={t('nav.parameters')}
+            active={path === '/'}
+            onClick={() => navigate('/')}
+          />
+          {showInventory && (
+            <NavItem
+              icon={<FolderIcon />}
+              label={t('nav.inventory')}
+              active={path === '/inventario'}
+              onClick={() => navigate('/inventario')}
+            />
+          )}
+          {showAdmin && (
+            <NavItem
+              icon={<UsersIcon />}
+              label={t('nav.admin')}
+              active={path.startsWith('/admin')}
+              onClick={() => navigate('/admin/rbac')}
+            />
+          )}
+          <NavItem
+            icon={<FolderIcon />}
+            label={t('nav.directory')}
+            active={path === '/directory/me'}
+            onClick={() => navigate('/directory/me')}
+          />
         </nav>
 
         {/* Content */}

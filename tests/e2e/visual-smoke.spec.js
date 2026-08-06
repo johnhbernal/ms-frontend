@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('Visual smoke', () => {
   test('login page screenshot', async ({ page }) => {

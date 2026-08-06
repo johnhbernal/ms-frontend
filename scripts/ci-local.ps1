@@ -34,9 +34,9 @@ if (-not $SkipNpmCi) {
     Write-Host '==> Skipping npm ci (-SkipNpmCi)' -ForegroundColor DarkGray
 }
 
-Write-Host '==> Jest (CI=true)' -ForegroundColor Cyan
+Write-Host '==> Vitest (CI=true)' -ForegroundColor Cyan
 $env:CI = 'true'
-npm test -- --watchAll=false
+npm test
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host '==> Production build' -ForegroundColor Cyan

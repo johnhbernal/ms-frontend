@@ -5,7 +5,7 @@ Extends global CLAUDE.md. Project-specific rules take precedence.
 ## Project Identity
 
 - **name:** ms-frontend
-- **stack:** React 18 + Create React App 5, react-router-dom 7, react-bootstrap 5, axios, react-hook-form + yup
+- **stack:** React 18 + Vite 6, react-router-dom 7, react-bootstrap 5, axios, react-hook-form + yup
 - **language:** es (UI copy); code/comments in English unless matching existing Spanish messages
 
 ## Architecture Notes
@@ -17,19 +17,18 @@ Extends global CLAUDE.md. Project-specific rules take precedence.
 
 ## Conventions
 
-- Pin React to 18 for CRA 5 — do not bump to 19 without leaving CRA.
-- Prefer editing existing files; no Vite migration unless requested.
-- Run tests with `CI=true` and `npm run build` after substantive changes.
-- Align docs with code (storage key `token`, React 18).
+- Pin React to 18 — do not bump to 19 without verifying Vite/React plugin support.
+- Prefer editing existing files.
+- Run tests with `CI=true npm test` and `npm run build` after substantive changes.
+- Align docs with code (storage key `token`, React 18, Vite env prefix `VITE_*`).
 
 ## Out of Scope
 
-- Vite / Next migration in drive-by work
 - Inventing product features
 - Committing secrets or `.env` credentials
 
 ## Active Stack Profiles
 
 - react
-- create-react-app
+- vite
 - bootstrap

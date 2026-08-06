@@ -8,7 +8,7 @@
 
 | Process | Port |
 |---------|------|
-| Frontend (CRA / Playwright `baseURL`) | `3000` |
+| Frontend (Vite dev / Playwright `baseURL`) | `3000` |
 | ms-auth | `8081` |
 | Practica API | `8082` |
 
@@ -20,10 +20,10 @@ File: `.github/workflows/ci.yml`
 |------|---------|
 | Node | 22 (`actions/setup-node@v4`, npm cache) |
 | Install | `npm ci` |
-| Test | `npm test -- --watchAll=false` with `CI=true` |
+| Test | `npm test` with `CI=true` (Vitest run mode) |
 | Build | `npm run build` |
 
-Optional locally: `npm run lint` (CRA ESLint; not in GHA job yet).
+Optional locally: `npm run lint` (not in GHA job yet).
 
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` is set so GitHub Actions JS runners that require Node 24 stay compatible.
 
@@ -35,54 +35,49 @@ Optional locally: `npm run lint` (CRA ESLint; not in GHA job yet).
 | Port | Host `3000` → container `8080` (`docker-compose.yml`) |
 | Health | `GET /health` (nginx) |
 | SPA | `try_files` history fallback — see `docker/nginx.conf` |
-| Build args | `REACT_APP_AUTH_API_URL`, `REACT_APP_PRACTICA_API_URL` (browser-reachable URLs) |
+| Build args | `VITE_AUTH_API_URL`, `VITE_PRACTICA_API_URL` (browser-reachable URLs) |
+| Output | `/dist` copied to nginx html root |
 
 ## Local parity
 
 ```powershell
 npm ci
-# Windows PowerShell — Jest needs CI=true or it stays in watch mode:
-$env:CI='true'; npm test -- --watchAll=false
+$env:CI='true'; npm test
 npm run build
 
 # Optional browsers (once per machine):
 npx playwright install chromium
 
-# Full local gate (Jest + build + E2E without backend):
+# Full local gate (Vitest + build + E2E without backend):
 npm run ci:local
 
 # All Playwright specs (auth-flow skips if :8081 is down):
 npm run test:e2e
 ```
 
-bash equivalent for Jest:
+bash equivalent:
 
 ```bash
-CI=true npm test -- --watchAll=false
+CI=true npm test
+npm run build
 ```
-
-If `npm install` / `npm ci` fails on peer deps with CRA 5, use `--legacy-peer-deps` once and document why.
 
 ## Playwright
 
 | Item | Value |
 |------|--------|
-| Config | `playwright.config.js` |
+| Config | `playwright.config.cjs` |
 | `baseURL` | `http://localhost:3000` |
 | Browser | Chromium |
 | `testDir` | `tests/e2e` |
-| `webServer` | `npm start` |
+| `webServer` | `npm run dev` |
 | Screenshots | on failure (`only-on-failure`); visual smoke baseline under `tests/e2e` |
 
 Ignored artifacts: `test-results/`, `playwright-report/` (see `.gitignore`).
 
-## CRA + react-router v7 (Jest)
+## Vitest + react-router v7
 
-CRA’s Jest does not resolve RR7 `exports` cleanly. `package.json` maps:
-
-- `react-router-dom` → `dist/index.js`
-- `react-router/dom` → `dist/development/dom-export.js`
-- `react-router` → `dist/development/index.js`
+`vite.config.js` aliases RR7 package exports for Vitest/jsdom (same paths formerly in Jest `moduleNameMapper`).
 
 `src/setupTests.js` polyfills `TextEncoder` / `TextDecoder` for RR7 under jsdom.
 
@@ -92,7 +87,7 @@ CRA’s Jest does not resolve RR7 `exports` cleanly. `package.json` maps:
 2. Do not skip hooks (`--no-verify`) in CI or commits.
 3. Fail the job on test or build errors — no `continue-on-error` for the main gate.
 4. Prefer Node 20 or 22 LTS in CI even if developers use Node 24 locally.
-5. Run `npm run ci:local` (or Jest + build + non-backend Playwright) before push.
+5. Run `npm run ci:local` (or Vitest + build + non-backend Playwright) before push.
 6. **After every push:** open the Actions URL. Red → read logs → classify → fix → local verify → push.
 
 ## Distinguishing failure types
@@ -100,9 +95,5 @@ CRA’s Jest does not resolve RR7 `exports` cleanly. `package.json` maps:
 | Symptom | Cause | Action |
 |---------|--------|--------|
 | *job was not acquired by Runner…* | GitHub hosted-runner queue — not code | `gh run rerun <id> --failed` |
-| `npm ci` / Missing `yaml@2.9.0` (or lock out of sync) | Lockfile incomplete vs Node 22 npm | `npm install` + commit `package-lock.json`; pin peer `yaml@2.9.0` if needed |
-| Jest/build/Playwright assertion fail | Real product/test bug | Fix locally with `ci:local` |
-
-## Known lockfile note
-
-CRA 5 pulls `tailwindcss` → `postcss-load-config@6` which peer-depends on `yaml@^2.4.2`. Direct `devDependency` `yaml@2.9.0` keeps `npm ci` green on GitHub Node 22.
+| `npm ci` / lock out of sync | Lockfile incomplete vs Node 22 npm | `npm install` + commit `package-lock.json` |
+| Vitest/build/Playwright assertion fail | Real product/test bug | Fix locally with `ci:local` |

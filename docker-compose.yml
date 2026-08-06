@@ -3,8 +3,8 @@ services:
     build:
       context: .
       args:
-        REACT_APP_AUTH_API_URL: ${REACT_APP_AUTH_API_URL:-http://localhost:8081}
-        REACT_APP_PRACTICA_API_URL: ${REACT_APP_PRACTICA_API_URL:-http://localhost:8082/api}
+        VITE_AUTH_API_URL: ${VITE_AUTH_API_URL:-http://localhost:8081}
+        VITE_PRACTICA_API_URL: ${VITE_PRACTICA_API_URL:-http://localhost:8082/api}
     ports:
       - "3000:8080"
     healthcheck:

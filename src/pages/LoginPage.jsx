@@ -1,15 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { login, saveToken, saveExpiresAt } from '../services/authService';
-
-const schema = yup.object({
-  username: yup.string().required('El usuario es obligatorio'),
-  password: yup.string().required('La contraseña es obligatoria').min(8, 'Mínimo 8 caracteres'),
-});
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const EyeIcon = ({ open }) =>
   open ? (
@@ -26,10 +23,25 @@ const EyeIcon = ({ open }) =>
   );
 
 function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetSuccess = location.state?.resetSuccess;
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const schema = useMemo(
+    () =>
+      yup.object({
+        username: yup.string().required(t('login.usernameRequired')),
+        password: yup
+          .string()
+          .required(t('login.passwordRequired'))
+          .min(8, t('login.passwordMin')),
+      }),
+    [t],
+  );
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
@@ -47,8 +59,8 @@ function LoginPage() {
     } catch (err) {
       setErrorMsg(
         err.response?.status < 500
-          ? err.response?.data?.description || 'Error de conexión'
-          : 'Error de conexión'
+          ? err.response?.data?.description || t('login.error')
+          : t('login.error'),
       );
     } finally {
       setLoading(false);
@@ -57,8 +69,6 @@ function LoginPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-
-      {/* ── Brand panel ──────────────────────────────────────── */}
       <div style={{
         width: '42%',
         background: 'var(--slate-900)',
@@ -70,16 +80,19 @@ function LoginPage() {
         flexShrink: 0,
         position: 'relative',
         overflow: 'hidden',
+        color: 'white',
       }}>
-        {/* subtle grid pattern */}
         <div style={{
           position: 'absolute', inset: 0, opacity: 0.04,
           backgroundImage: 'linear-gradient(var(--slate-400) 1px, transparent 1px), linear-gradient(90deg, var(--slate-400) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }} />
 
-        <div style={{ position: 'relative', textAlign: 'center', maxWidth: '280px' }}>
-          {/* logo mark */}
+        <div style={{ position: 'absolute', top: 20, right: 20 }}>
+          <LanguageSwitcher compact />
+        </div>
+
+        <div style={{ position: 'relative', textAlign: 'center', maxWidth: 300 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 14,
             background: 'linear-gradient(135deg, var(--blue-600), #6366f1)',
@@ -94,35 +107,21 @@ function LoginPage() {
           </div>
 
           <h1 style={{ color: 'white', fontSize: '1.6rem', fontWeight: 700, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
-            MS Practica
+            {t('app.name')}
           </h1>
           <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0, lineHeight: 1.6 }}>
-            Gestión de Parámetros del Sistema
+            {t('app.tagline')}
           </p>
 
-          {/* divider */}
           <div style={{ margin: '36px auto', width: 40, height: 1, background: 'var(--slate-700)' }} />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {['Seguro', 'Rápido', 'Confiable'].map((label) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%',
-                  background: 'rgba(37,99,235,0.18)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="var(--blue-200)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span style={{ color: 'var(--slate-400)', fontSize: '13px' }}>{label}</span>
-              </div>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left' }}>
+            <span style={{ color: 'var(--slate-400)', fontSize: 13 }}>{t('login.authN')}</span>
+            <span style={{ color: 'var(--slate-400)', fontSize: 13 }}>{t('login.authZ')}</span>
           </div>
         </div>
       </div>
 
-      {/* ── Form panel ──────────────────────────────────────── */}
       <div style={{
         flex: 1,
         background: 'white',
@@ -131,23 +130,25 @@ function LoginPage() {
         justifyContent: 'center',
         padding: '3rem',
       }}>
-        <div style={{ width: '100%', maxWidth: '360px' }}>
-          <div style={{ marginBottom: '32px' }}>
+        <div style={{ width: '100%', maxWidth: 360 }}>
+          <div style={{ marginBottom: 32 }}>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--slate-900)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-              Iniciar sesión
+              {t('login.title')}
             </h2>
             <p style={{ color: 'var(--slate-500)', fontSize: '13.5px', margin: 0 }}>
-              Ingresa tus credenciales para continuar
+              {t('login.subtitle')}
             </p>
           </div>
 
           <Form onSubmit={handleSubmit(onSubmit)}>
+            {resetSuccess && (
+              <Alert variant="success" className="mb-4">{t('login.resetOk')}</Alert>
+            )}
             <Form.Group className="mb-4" controlId="username">
-              <Form.Label>Usuario</Form.Label>
+              <Form.Label>{t('login.username')}</Form.Label>
               <Form.Control
                 id="username"
                 type="text"
-                placeholder="Ej. admin"
                 autoComplete="username"
                 autoFocus
                 isInvalid={!!errors.username}
@@ -160,12 +161,11 @@ function LoginPage() {
             </Form.Group>
 
             <Form.Group className="mb-4" controlId="password">
-              <Form.Label>Contraseña</Form.Label>
+              <Form.Label>{t('login.password')}</Form.Label>
               <div style={{ position: 'relative' }}>
                 <Form.Control
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
                   autoComplete="current-password"
                   isInvalid={!!errors.password}
                   disabled={loading}
@@ -175,6 +175,7 @@ function LoginPage() {
                 <button
                   type="button"
                   tabIndex={-1}
+                  aria-label={t('login.password')}
                   onClick={() => setShowPassword((p) => !p)}
                   style={{
                     position: 'absolute', right: 11,
@@ -183,10 +184,7 @@ function LoginPage() {
                     background: 'none', border: 'none', padding: 0,
                     color: 'var(--slate-400)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center',
-                    transition: 'color var(--t-fast)',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--slate-600)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--slate-400)'}
                 >
                   <EyeIcon open={showPassword} />
                 </button>
@@ -196,19 +194,29 @@ function LoginPage() {
               </div>
             </Form.Group>
 
-            {errorMsg && (
-              <Alert variant="danger" className="mb-4">
-                {errorMsg}
-              </Alert>
-            )}
+            {errorMsg && <Alert variant="danger" className="mb-4">{errorMsg}</Alert>}
 
             <Button type="submit" variant="primary" className="w-100" style={{ padding: '10px 14px' }} disabled={loading}>
               {loading ? (
-                <><Spinner size="sm" className="me-2" animation="border" />Iniciando sesión...</>
+                <><Spinner size="sm" className="me-2" animation="border" />{t('common.loading')}</>
               ) : (
-                'Ingresar'
+                t('login.submit')
               )}
             </Button>
+
+            <div className="text-center mt-3">
+              <Link to="/forgot-password" style={{ fontSize: 13, color: 'var(--blue-600)' }}>
+                {t('login.forgot')}
+              </Link>
+            </div>
+
+            <p style={{
+              marginTop: 20, fontSize: 12, color: 'var(--slate-500)',
+              lineHeight: 1.5, background: 'var(--slate-50)',
+              borderRadius: 8, padding: '10px 12px', border: '1px solid var(--slate-200)',
+            }}>
+              {t('login.demoHint')}
+            </p>
           </Form>
         </div>
       </div>

@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_AUTH_API_URL || 'http://localhost:8081';
+const BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8081';
+
+const ADMIN_PERMISSIONS = ['GROUP_ADMIN', 'USER_ADMIN'];
 
 /** Decode JWT payload (base64url → JSON). */
-function decodeJwtPayload(token) {
+export function decodeJwtPayload(token) {
   const part = token.split('.')[1];
   if (!part) throw new Error('Invalid token');
   const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
@@ -52,7 +54,7 @@ export const logout = () => {
     axios.post(`${BASE_URL}/api/auth/logout`, null, {
       headers: { Authorization: `Bearer ${token}` }
     }).catch((err) => {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn('Server-side logout failed (session cleared locally):', err?.message);
       }
     });
@@ -74,5 +76,55 @@ export const renewToken = async () => {
     `${BASE_URL}/api/auth/renew`,
     { sessionToken: token }
   );
+  return response.data;
+};
+
+export const getTokenPayload = () => {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    return decodeJwtPayload(token);
+  } catch {
+    return null;
+  }
+};
+
+export const getJwtRole = () => getTokenPayload()?.role ?? '';
+
+export const getJwtRoles = () => {
+  const payload = getTokenPayload();
+  if (!payload) return [];
+  if (Array.isArray(payload.roles) && payload.roles.length > 0) return payload.roles;
+  return payload.role ? [payload.role] : [];
+};
+
+export const getJwtPermissions = () => {
+  const payload = getTokenPayload();
+  return Array.isArray(payload?.permissions) ? payload.permissions : [];
+};
+
+/** JWT stores bare codes (e.g. INVENTARIO_PRECIO_READ); Spring maps them as PERM_*. */
+export const hasPermission = (code) => {
+  if (getJwtRole() === 'ADMIN') return true;
+  return getJwtPermissions().includes(code);
+};
+
+export const canSeeInventory = () =>
+  getJwtRole() === 'ADMIN' || hasPermission('INVENTARIO_PRECIO_READ');
+
+/** Nav gate: primary ADMIN role or RBAC admin permissions (server still enforces). */
+export const isAdminNavVisible = () => {
+  if (getJwtRole() === 'ADMIN') return true;
+  const perms = getJwtPermissions();
+  return ADMIN_PERMISSIONS.some((p) => perms.includes(p));
+};
+
+export const forgotPassword = async (email) => {
+  const response = await axios.post(`${BASE_URL}/api/auth/forgot-password`, { email });
+  return response.data;
+};
+
+export const resetPassword = async (token, newPassword) => {
+  const response = await axios.post(`${BASE_URL}/api/auth/reset-password`, { token, newPassword });
   return response.data;
 };

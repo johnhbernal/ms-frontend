@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button, Form, Spinner, Table } from 'react-bootstrap';
 import { getParametros, buscarPorNombre, deleteParametro } from '../services/practicaService';
 import ParametroModal from '../components/ParametroModal';
@@ -49,6 +50,7 @@ const OffIcon = () => (
 );
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const active = status === 'A';
   return (
     <span style={{
@@ -67,7 +69,7 @@ function StatusBadge({ status }) {
         width: 6, height: 6, borderRadius: '50%',
         background: active ? 'var(--green-700)' : 'var(--slate-400)',
       }} />
-      {active ? 'Activo' : 'Inactivo'}
+      {active ? t('parameters.active') : t('parameters.inactive')}
     </span>
   );
 }
@@ -111,15 +113,16 @@ const safeErr = (err, msg) =>
   err.response?.status < 500 ? err.response?.data?.description || msg : msg;
 
 /** OWASP A02/A04 — never render master-token / secret-like values in clear text */
-export function displayParamValue(name, value) {
+export function displayParamValue(name, value, hiddenLabel = '•••••••• (hidden)') {
   const n = (name || '').toUpperCase();
   if (n.startsWith('MASTER_TOKEN') || n.includes('SECRET') || n.includes('PASSWORD') || n.includes('API_KEY')) {
-    return '•••••••• (oculto)';
+    return hiddenLabel;
   }
   return value ?? '';
 }
 
 function ParametrosPage() {
+  const { t } = useTranslation();
   const [parametros, setParametros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -137,11 +140,11 @@ function ParametrosPage() {
       setParametros(res.data.data || []);
       setPage(0);
     } catch (err) {
-      setError(safeErr(err, 'Error al cargar parámetros'));
+      setError(safeErr(err, t('parameters.loadError')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadParametros(); }, [loadParametros]);
 
@@ -162,11 +165,11 @@ function ParametrosPage() {
     setError('');
     const trimmed = searchTerm.trim();
     if (trimmed.length > 50) {
-      setError('El término de búsqueda no puede superar 50 caracteres');
+      setError(t('parameters.searchTooLong'));
       return;
     }
     if (trimmed.length > 0 && !/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
-      setError('El término de búsqueda contiene caracteres no permitidos');
+      setError(t('parameters.searchInvalid'));
       return;
     }
     setLoading(true);
@@ -177,19 +180,19 @@ function ParametrosPage() {
       setParametros(res.data.data || []);
       setPage(0);
     } catch (err) {
-      setError(safeErr(err, 'Error en la búsqueda'));
+      setError(safeErr(err, t('parameters.searchError')));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeactivate = async (param) => {
-    if (!window.confirm(`¿Desactivar "${param.parameterName}"?`)) return;
+    if (!window.confirm(t('parameters.deactivateConfirm', { name: param.parameterName }))) return;
     try {
       await deleteParametro(param.parameterCode);
       await loadParametros();
     } catch (err) {
-      setError(safeErr(err, 'Error al desactivar'));
+      setError(safeErr(err, t('parameters.deactivateError')));
     }
   };
 
@@ -199,16 +202,16 @@ function ParametrosPage() {
 
   const handleExport = (format) => {
     if (parametros.length === 0) {
-      setError('No hay parámetros para exportar');
+      setError(t('parameters.exportEmpty'));
       return;
     }
-    const headers = ['#', 'Nombre', 'Categoría', 'Valor', 'Estado'];
+    const headers = ['#', t('parameters.csvName'), t('parameters.csvCategory'), t('parameters.csvValue'), t('parameters.csvStatus')];
     const rows = parametros.map((p, i) => [
       i + 1,
       p.parameterName,
       p.parameterCategory || '',
-      displayParamValue(p.parameterName, p.value),
-      p.status === 'A' ? 'Activo' : 'Inactivo',
+      displayParamValue(p.parameterName, p.value, t('parameters.hiddenValue')),
+      p.status === 'A' ? t('parameters.active') : t('parameters.inactive'),
     ]);
     const stamp = new Date().toISOString().slice(0, 10);
     const ext = format === 'excel' ? 'csv' : 'csv';
@@ -233,10 +236,12 @@ function ParametrosPage() {
       }}>
         <div>
           <h4 style={{ margin: '0 0 3px', color: 'var(--slate-900)', fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
-            Parámetros del Sistema
+            {t('parameters.title')}
           </h4>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--slate-500)' }} data-testid="parametros-count">
-            {loading ? 'Cargando…' : `${parametros.length} parámetro${parametros.length !== 1 ? 's' : ''}`}
+            {loading
+              ? t('parameters.loadingCount')
+              : t('parameters.count', { count: parametros.length })}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -247,30 +252,30 @@ function ParametrosPage() {
             data-testid="export-csv"
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ExportIcon /> Exportar CSV
+            <ExportIcon /> {t('parameters.exportCsv')}
           </Button>
           <Button
             variant="outline-secondary"
             onClick={() => handleExport('excel')}
             disabled={loading || parametros.length === 0}
             data-testid="export-excel"
-            title="CSV UTF-8 con BOM — se abre en Excel"
+            title={t('parameters.exportExcelTitle')}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ExportIcon /> Exportar Excel
+            <ExportIcon /> {t('parameters.exportExcel')}
           </Button>
           <Button
             variant="primary"
             onClick={handleNew}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <PlusIcon /> Nuevo Parámetro
+            <PlusIcon /> {t('parameters.create')}
           </Button>
         </div>
       </div>
 
       <Form onSubmit={handleSearch} style={{ marginBottom: 16 }} role="search">
-        <label htmlFor="parametros-search" className="visually-hidden">Buscar por nombre</label>
+        <label htmlFor="parametros-search" className="visually-hidden">{t('parameters.searchLabel')}</label>
         <div style={{ position: 'relative', maxWidth: 360 }}>
           <span
             style={{
@@ -285,7 +290,7 @@ function ParametrosPage() {
             id="parametros-search"
             type="search"
             className="search-input-with-icon"
-            placeholder="Buscar por nombre…"
+            placeholder={t('parameters.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoComplete="off"
@@ -296,7 +301,7 @@ function ParametrosPage() {
       {error && (
         <Alert variant="danger" className="mb-3">
           {error}{' '}
-          <Alert.Link onClick={loadParametros} style={{ cursor: 'pointer' }}>Reintentar</Alert.Link>
+          <Alert.Link onClick={loadParametros} style={{ cursor: 'pointer' }}>{t('parameters.retry')}</Alert.Link>
         </Alert>
       )}
 
@@ -313,10 +318,10 @@ function ParametrosPage() {
         }}>
           <EmptyIcon />
           <p style={{ margin: '12px 0 4px', fontWeight: 600, color: 'var(--slate-700)', fontSize: 14 }}>
-            Sin parámetros
+            {t('parameters.empty')}
           </p>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--slate-400)' }}>
-            {searchTerm ? 'No hay resultados para esa búsqueda.' : 'Crea el primer parámetro.'}
+            {searchTerm ? t('parameters.emptySearch') : t('parameters.emptyCreate')}
           </p>
         </div>
       ) : (
@@ -331,11 +336,11 @@ function ParametrosPage() {
             <thead style={{ background: 'var(--slate-900)', color: 'white' }}>
               <tr>
                 <th style={{ width: 48 }}>#</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Valor</th>
-                <th style={{ width: 100 }}>Estado</th>
-                <th style={{ width: 140, textAlign: 'right' }}>Acciones</th>
+                <th>{t('parameters.colName')}</th>
+                <th>{t('parameters.colCategory')}</th>
+                <th>{t('parameters.colValue')}</th>
+                <th style={{ width: 100 }}>{t('parameters.colStatus')}</th>
+                <th style={{ width: 140, textAlign: 'right' }}>{t('parameters.colActions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -357,13 +362,13 @@ function ParametrosPage() {
                     </span>
                   </td>
                   <td style={{ color: 'var(--slate-600)', fontFamily: 'monospace', fontSize: 12 }}>
-                    {displayParamValue(p.parameterName, p.value)}
+                    {displayParamValue(p.parameterName, p.value, t('parameters.hiddenValue'))}
                   </td>
                   <td><StatusBadge status={p.status} /></td>
                   <td style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                      <ActionButton onClick={() => handleEdit(p)} icon={<EditIcon />} label="Editar" />
-                      <ActionButton onClick={() => handleDeactivate(p)} icon={<OffIcon />} label="Desactivar" danger />
+                      <ActionButton onClick={() => handleEdit(p)} icon={<EditIcon />} label={t('parameters.edit')} />
+                      <ActionButton onClick={() => handleDeactivate(p)} icon={<OffIcon />} label={t('parameters.deactivate')} danger />
                     </div>
                   </td>
                 </tr>
@@ -387,13 +392,13 @@ function ParametrosPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>Filas por página</span>
+              <span>{t('parameters.rowsPerPage')}</span>
               <Form.Select
                 size="sm"
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
                 style={{ width: 72 }}
-                aria-label="Filas por página"
+                aria-label={t('parameters.rowsPerPage')}
                 data-testid="page-size"
               >
                 {PAGE_SIZES.map((n) => (
@@ -401,7 +406,7 @@ function ParametrosPage() {
                 ))}
               </Form.Select>
               <span data-testid="page-range">
-                {from}–{to} de {parametros.length}
+                {t('parameters.range', { from, to, total: parametros.length })}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -412,10 +417,10 @@ function ParametrosPage() {
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 data-testid="page-prev"
               >
-                Anterior
+                {t('parameters.prev')}
               </Button>
               <span data-testid="page-indicator">
-                Página {safePage + 1} / {totalPages}
+                {t('parameters.pageOf', { page: safePage + 1, total: totalPages })}
               </span>
               <Button
                 variant="outline-secondary"
@@ -424,7 +429,7 @@ function ParametrosPage() {
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 data-testid="page-next"
               >
-                Siguiente
+                {t('parameters.next')}
               </Button>
             </div>
           </div>

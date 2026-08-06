@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken, logout, isTokenExpired } from './authService';
 
-const BASE_URL = process.env.REACT_APP_PRACTICA_API_URL || 'http://localhost:8082/api';
+const BASE_URL = import.meta.env.VITE_PRACTICA_API_URL || 'http://localhost:8082/api';
 
 const client = axios.create({ baseURL: BASE_URL });
 

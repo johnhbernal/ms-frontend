@@ -1,21 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { createParametro, updateParametro } from '../services/practicaService';
 
-const schema = yup.object({
-  parameterName:     yup.string().required('El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
-  parameterCategory: yup.string().required('La categoría es obligatoria').max(50, 'Máximo 50 caracteres'),
-  value:             yup.string().required('El valor es obligatorio').max(500, 'Máximo 500 caracteres'),
-  status:            yup.string().required().oneOf(['A', 'I']),
-});
-
 function ParametroModal({ show, onHide, onSaved, parametro }) {
+  const { t } = useTranslation();
   const isEdit = !!parametro;
   const [apiError, setApiError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const schema = useMemo(() => yup.object({
+    parameterName: yup.string()
+      .required(t('parameters.nameRequired'))
+      .max(100, t('parameters.maxChars', { n: 100 })),
+    parameterCategory: yup.string()
+      .required(t('parameters.categoryRequired'))
+      .max(50, t('parameters.maxChars', { n: 50 })),
+    value: yup.string()
+      .required(t('parameters.valueRequired'))
+      .max(500, t('parameters.maxChars', { n: 500 })),
+    status: yup.string().required().oneOf(['A', 'I']),
+  }), [t]);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
@@ -50,8 +58,8 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
     } catch (err) {
       setApiError(
         err.response?.status < 500
-          ? err.response?.data?.description || 'Error al guardar'
-          : 'Error al guardar'
+          ? err.response?.data?.description || t('parameters.saveError')
+          : t('parameters.saveError')
       );
     } finally {
       setSaving(false);
@@ -62,7 +70,7 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
     <Modal show={show} onHide={onHide} centered size="sm">
       <Modal.Header closeButton style={{ padding: '18px 22px' }}>
         <Modal.Title style={{ fontSize: 15, fontWeight: 700, color: 'var(--slate-900)', letterSpacing: '-0.01em' }}>
-          {isEdit ? 'Editar parámetro' : 'Nuevo parámetro'}
+          {isEdit ? t('parameters.modalEdit') : t('parameters.modalCreate')}
         </Modal.Title>
       </Modal.Header>
 
@@ -71,7 +79,7 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             <Form.Group controlId="parameterName">
-              <Form.Label>Nombre <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
+              <Form.Label>{t('parameters.fieldName')} <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 id="parameterName"
                 type="text"
@@ -87,7 +95,7 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
             </Form.Group>
 
             <Form.Group controlId="parameterCategory">
-              <Form.Label>Categoría <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
+              <Form.Label>{t('parameters.fieldCategory')} <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 id="parameterCategory"
                 type="text"
@@ -102,7 +110,7 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
             </Form.Group>
 
             <Form.Group controlId="value">
-              <Form.Label>Valor <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
+              <Form.Label>{t('parameters.fieldValue')} <span style={{ color: 'var(--red-600)' }}>*</span></Form.Label>
               <Form.Control
                 id="value"
                 type="text"
@@ -117,10 +125,10 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Estado</Form.Label>
+              <Form.Label>{t('parameters.fieldStatus')}</Form.Label>
               <Form.Select disabled={saving} {...register('status')}>
-                <option value="A">Activo</option>
-                <option value="I">Inactivo</option>
+                <option value="A">{t('parameters.active')}</option>
+                <option value="I">{t('parameters.inactive')}</option>
               </Form.Select>
             </Form.Group>
 
@@ -134,13 +142,13 @@ function ParametroModal({ show, onHide, onSaved, parametro }) {
 
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide} disabled={saving}>
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button variant="primary" type="submit" form="parametro-form" disabled={saving}>
           {saving ? (
-            <><Spinner size="sm" animation="border" className="me-2" />Guardando…</>
+            <><Spinner size="sm" animation="border" className="me-2" />{t('parameters.saving')}</>
           ) : (
-            isEdit ? 'Guardar cambios' : 'Crear parámetro'
+            isEdit ? t('parameters.saveChanges') : t('parameters.createSubmit')
           )}
         </Button>
       </Modal.Footer>

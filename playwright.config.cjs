@@ -20,14 +20,10 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: 'npm start',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
-    // Prefer reusing a local `npm start` (common while validating UX). GitHub Actions starts fresh.
+    // Prefer reusing a local dev server (common while validating UX). GitHub Actions starts fresh.
     reuseExistingServer: process.env.PW_FORCE_WEB_SERVER === '1' ? false : true,
     timeout: 120_000,
-    env: {
-      ...process.env,
-      BROWSER: 'none',
-    },
   },
 });
