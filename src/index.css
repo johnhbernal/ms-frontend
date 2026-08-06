@@ -81,6 +81,12 @@ body {
 
 .form-control::placeholder { color: var(--slate-400) !important; }
 
+/* Search field with leading icon — must beat .form-control padding !important
+   (global rule uses padding: 9px 12px !important and was covering the “B” of Buscar) */
+.form-control.search-input-with-icon {
+  padding-left: 2.75rem !important;
+}
+
 .form-control:focus,
 .form-select:focus {
   border-color: var(--blue-600) !important;

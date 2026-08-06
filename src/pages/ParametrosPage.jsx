@@ -1,22 +1,33 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Alert, Button, Form, Spinner, Table } from 'react-bootstrap';
 import { getParametros, buscarPorNombre, deleteParametro } from '../services/practicaService';
 import ParametroModal from '../components/ParametroModal';
+import { downloadCsv } from '../utils/exportCsv';
+
+const PAGE_SIZES = [5, 10, 25, 50];
 
 const SearchIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 
 const PlusIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
     <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 
+const ExportIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
 const EmptyIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--slate-300)' }}>
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--slate-300)' }} aria-hidden="true">
     <rect x="2" y="3" width="20" height="14" rx="2" />
     <line x1="8" y1="21" x2="16" y2="21" />
     <line x1="12" y1="17" x2="12" y2="21" />
@@ -24,14 +35,14 @@ const EmptyIcon = () => (
 );
 
 const EditIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
 const OffIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
   </svg>
@@ -65,6 +76,7 @@ function ActionButton({ onClick, icon, label, danger }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -99,7 +111,7 @@ const safeErr = (err, msg) =>
   err.response?.status < 500 ? err.response?.data?.description || msg : msg;
 
 /** OWASP A02/A04 — never render master-token / secret-like values in clear text */
-function displayParamValue(name, value) {
+export function displayParamValue(name, value) {
   const n = (name || '').toUpperCase();
   if (n.startsWith('MASTER_TOKEN') || n.includes('SECRET') || n.includes('PASSWORD') || n.includes('API_KEY')) {
     return '•••••••• (oculto)';
@@ -114,6 +126,8 @@ function ParametrosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingParam, setEditingParam] = useState(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
 
   const loadParametros = useCallback(async () => {
     setLoading(true);
@@ -121,6 +135,7 @@ function ParametrosPage() {
     try {
       const res = await getParametros();
       setParametros(res.data.data || []);
+      setPage(0);
     } catch (err) {
       setError(safeErr(err, 'Error al cargar parámetros'));
     } finally {
@@ -129,6 +144,18 @@ function ParametrosPage() {
   }, []);
 
   useEffect(() => { loadParametros(); }, [loadParametros]);
+
+  const totalPages = Math.max(1, Math.ceil(parametros.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+
+  const pageRows = useMemo(() => {
+    const start = safePage * pageSize;
+    return parametros.slice(start, start + pageSize);
+  }, [parametros, safePage, pageSize]);
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -148,6 +175,7 @@ function ParametrosPage() {
         ? await buscarPorNombre(trimmed)
         : await getParametros();
       setParametros(res.data.data || []);
+      setPage(0);
     } catch (err) {
       setError(safeErr(err, 'Error en la búsqueda'));
     } finally {
@@ -166,55 +194,105 @@ function ParametrosPage() {
   };
 
   const handleEdit = (param) => { setEditingParam(param); setShowModal(true); };
-  const handleNew  = ()      => { setEditingParam(null);  setShowModal(true); };
-  const handleSaved = ()     => { setShowModal(false); loadParametros(); };
+  const handleNew = () => { setEditingParam(null); setShowModal(true); };
+  const handleSaved = () => { setShowModal(false); loadParametros(); };
+
+  const handleExport = (format) => {
+    if (parametros.length === 0) {
+      setError('No hay parámetros para exportar');
+      return;
+    }
+    const headers = ['#', 'Nombre', 'Categoría', 'Valor', 'Estado'];
+    const rows = parametros.map((p, i) => [
+      i + 1,
+      p.parameterName,
+      p.parameterCategory || '',
+      displayParamValue(p.parameterName, p.value),
+      p.status === 'A' ? 'Activo' : 'Inactivo',
+    ]);
+    const stamp = new Date().toISOString().slice(0, 10);
+    const ext = format === 'excel' ? 'csv' : 'csv';
+    const name = format === 'excel'
+      ? `parametros-excel-${stamp}.${ext}`
+      : `parametros-${stamp}.${ext}`;
+    downloadCsv(name, headers, rows);
+  };
+
+  const from = parametros.length === 0 ? 0 : safePage * pageSize + 1;
+  const to = Math.min((safePage + 1) * pageSize, parametros.length);
 
   return (
     <>
-      {/* ── Header ─────────────────────────────────────────── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: 20,
+        gap: 12,
+        flexWrap: 'wrap',
       }}>
         <div>
           <h4 style={{ margin: '0 0 3px', color: 'var(--slate-900)', fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
             Parámetros del Sistema
           </h4>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--slate-500)' }}>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--slate-500)' }} data-testid="parametros-count">
             {loading ? 'Cargando…' : `${parametros.length} parámetro${parametros.length !== 1 ? 's' : ''}`}
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={handleNew}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <PlusIcon /> Nuevo Parámetro
-        </Button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Button
+            variant="outline-secondary"
+            onClick={() => handleExport('csv')}
+            disabled={loading || parametros.length === 0}
+            data-testid="export-csv"
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <ExportIcon /> Exportar CSV
+          </Button>
+          <Button
+            variant="outline-secondary"
+            onClick={() => handleExport('excel')}
+            disabled={loading || parametros.length === 0}
+            data-testid="export-excel"
+            title="CSV UTF-8 con BOM — se abre en Excel"
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <ExportIcon /> Exportar Excel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleNew}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <PlusIcon /> Nuevo Parámetro
+          </Button>
+        </div>
       </div>
 
-      {/* ── Search ─────────────────────────────────────────── */}
-      <Form onSubmit={handleSearch} style={{ marginBottom: 16 }}>
-        <div style={{ position: 'relative', maxWidth: 340 }}>
-          <span style={{
-            position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)',
-            color: 'var(--slate-400)', display: 'flex', pointerEvents: 'none',
-          }}>
+      <Form onSubmit={handleSearch} style={{ marginBottom: 16 }} role="search">
+        <label htmlFor="parametros-search" className="visually-hidden">Buscar por nombre</label>
+        <div style={{ position: 'relative', maxWidth: 360 }}>
+          <span
+            style={{
+              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+              color: 'var(--slate-400)', display: 'flex', pointerEvents: 'none', zIndex: 1,
+            }}
+            aria-hidden="true"
+          >
             <SearchIcon />
           </span>
           <Form.Control
-            type="text"
+            id="parametros-search"
+            type="search"
+            className="search-input-with-icon"
             placeholder="Buscar por nombre…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ paddingLeft: '2.2rem' }}
+            autoComplete="off"
           />
         </div>
       </Form>
 
-      {/* ── Error ──────────────────────────────────────────── */}
       {error && (
         <Alert variant="danger" className="mb-3">
           {error}{' '}
@@ -222,7 +300,6 @@ function ParametrosPage() {
         </Alert>
       )}
 
-      {/* ── Content ────────────────────────────────────────── */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--blue-600)' }}>
           <Spinner animation="border" style={{ width: 28, height: 28 }} />
@@ -262,10 +339,10 @@ function ParametrosPage() {
               </tr>
             </thead>
             <tbody>
-              {parametros.map((p, i) => (
+              {pageRows.map((p, i) => (
                 <tr key={p.parameterCode}>
                   <td style={{ color: 'var(--slate-400)', fontVariantNumeric: 'tabular-nums' }}>
-                    {i + 1}
+                    {safePage * pageSize + i + 1}
                   </td>
                   <td style={{ fontWeight: 500, color: 'var(--slate-900)' }}>
                     {p.parameterName}
@@ -276,7 +353,7 @@ function ParametrosPage() {
                       background: 'var(--slate-100)', padding: '2px 7px',
                       borderRadius: 99, letterSpacing: '0.04em',
                     }}>
-                      {p.parameterCategory}
+                      {p.parameterCategory || '—'}
                     </span>
                   </td>
                   <td style={{ color: 'var(--slate-600)', fontFamily: 'monospace', fontSize: 12 }}>
@@ -293,6 +370,64 @@ function ParametrosPage() {
               ))}
             </tbody>
           </Table>
+
+          <div
+            data-testid="parametros-paginator"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 12,
+              padding: '12px 16px',
+              borderTop: '1px solid var(--slate-100)',
+              background: 'var(--slate-50)',
+              fontSize: 13,
+              color: 'var(--slate-600)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>Filas por página</span>
+              <Form.Select
+                size="sm"
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+                style={{ width: 72 }}
+                aria-label="Filas por página"
+                data-testid="page-size"
+              >
+                {PAGE_SIZES.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </Form.Select>
+              <span data-testid="page-range">
+                {from}–{to} de {parametros.length}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                disabled={safePage === 0}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                data-testid="page-prev"
+              >
+                Anterior
+              </Button>
+              <span data-testid="page-indicator">
+                Página {safePage + 1} / {totalPages}
+              </span>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                disabled={safePage >= totalPages - 1}
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                data-testid="page-next"
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
