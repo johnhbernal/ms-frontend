@@ -2,6 +2,15 @@ import axios from 'axios';
 
 const BASE_URL = process.env.REACT_APP_AUTH_API_URL || 'http://localhost:8081';
 
+/** Decode JWT payload (base64url → JSON). */
+function decodeJwtPayload(token) {
+  const part = token.split('.')[1];
+  if (!part) throw new Error('Invalid token');
+  const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  return JSON.parse(atob(padded));
+}
+
 export const login = async (username, password) => {
   const response = await axios.post(`${BASE_URL}/api/auth/login`, { username, password });
   return response.data;
@@ -19,7 +28,7 @@ export const getUsername = () => {
   const token = getToken();
   if (!token) return '';
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = decodeJwtPayload(token);
     return payload.sub || '';
   } catch {
     return '';
@@ -30,7 +39,7 @@ export const isTokenExpired = () => {
   const token = getToken();
   if (!token) return true;
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = decodeJwtPayload(token);
     return typeof payload.exp === 'number' && Date.now() >= payload.exp * 1000;
   } catch {
     return true;

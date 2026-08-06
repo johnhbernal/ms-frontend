@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
+import { Alert, Button, Form, Spinner, Table } from 'react-bootstrap';
 import { getParametros, buscarPorNombre, deleteParametro } from '../services/practicaService';
 import ParametroModal from '../components/ParametroModal';
 

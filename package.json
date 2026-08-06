@@ -10,9 +10,9 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.16.0",
     "bootstrap": "^5.3.8",
-    "react": "^19.2.6",
+    "react": "^18.3.1",
     "react-bootstrap": "^2.10.10",
-    "react-dom": "^19.2.6",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.75.0",
     "react-router-dom": "^7.15.0",
     "react-scripts": "5.0.1",
@@ -30,6 +30,13 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router-dom$": "<rootDir>/node_modules/react-router-dom/dist/index.js",
+      "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
+      "^react-router$": "<rootDir>/node_modules/react-router/dist/development/index.js"
+    }
   },
   "browserslist": {
     "production": [

@@ -62,8 +62,8 @@ $RECYCLE.BIN/
 *.tsbuildinfo
 /storybook-static
 
-# AI/agent tooling
+# AI/agent tooling (keep CLAUDE.md + .ai/ in repo for specialists)
 .claude/
+.claude-flow/
 .superpowers/
 docs/superpowers/
-CLAUDE.md

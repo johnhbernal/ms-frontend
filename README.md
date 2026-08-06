@@ -6,7 +6,7 @@ React SPA for managing Practica system parameters.
 
 | | |
 |---|---|
-| Framework | React 19 (Create React App) |
+| Framework | React 18 (Create React App 5) |
 | UI | React Bootstrap 5 |
 | Forms | react-hook-form 7 + yup |
 | HTTP | axios |
@@ -38,7 +38,7 @@ REACT_APP_PRACTICA_API_URL=http://localhost:8082/api
 
 ## Session management
 
-- `sessionToken` stored in `sessionStorage` (cleared on tab close)
+- JWT stored in `sessionStorage` under key `token` (cleared on tab close)
 - Token expiry checked before every API request; expired session redirects to `/login`
 - Auto-renewal: token is silently renewed 3 minutes before expiry
 - Warning banner shown 1 minute before expiry if renewal fails

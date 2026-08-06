@@ -1,8 +1,12 @@
 import { Navigate } from 'react-router-dom';
-import { getToken } from '../services/authService';
+import { getToken, isTokenExpired } from '../services/authService';
 
 function PrivateRoute({ children }) {
-  return getToken() ? children : <Navigate to="/login" replace />;
+  const token = getToken();
+  if (!token || isTokenExpired()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 }
 
 export default PrivateRoute;
