@@ -67,15 +67,16 @@ docker compose up --build
 
 ### Full Practica stack (three repos)
 
-Run backends from sibling repos, then the frontend container or CRA dev server:
+Preferred: sibling folder [`../practica-stack`](../practica-stack) (one compose for Postgres + auth + practica + this UI).
 
-| Repo | Command | URL |
-|------|---------|-----|
-| `ms-auth` | `docker compose up --build` (set `APP_JWT_*` in `.env`) | http://localhost:8081 |
-| `practica` | `docker compose up --build` (shared `APP_JWT_SECRET_SESSION`) | http://localhost:8082/api |
-| `ms-frontend` | `docker compose up --build` or `npm start` | http://localhost:3000 |
+```powershell
+cd ..\practica-stack
+copy .env.example .env
+powershell -File scripts\smoke-stack-docker.ps1
+# → http://localhost:3000  (admin / Admin123!)
+```
 
-Ensure `APP_CORS_ALLOWED_ORIGINS` on both backends includes `http://localhost:3000`.
+Or run each repo’s own `docker compose` / `npm start` separately. Ensure `APP_CORS_ALLOWED_ORIGINS` includes `http://localhost:3000`.
 
 ## Session management
 
