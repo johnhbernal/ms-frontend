@@ -23,7 +23,7 @@ File: `.github/workflows/ci.yml`
 | Test | `npm test` with `CI=true` (Vitest run mode) |
 | Build | `npm run build` |
 
-Optional locally: `npm run lint` (not in GHA job yet).
+Optional locally: `npm run lint` — **also in the GHA job** (`Lint` step after `Test`, `--max-warnings 0`).
 
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` is set so GitHub Actions JS runners that require Node 24 stay compatible.
 
@@ -70,8 +70,19 @@ npm run build
 | `baseURL` | `http://localhost:3000` |
 | Browser | Chromium |
 | `testDir` | `tests/e2e` |
-| `webServer` | `npm run dev` |
+| `webServer` | `node node_modules/vite/bin/vite.js --port 3000 --strictPort` |
+| `locale` | `es-CO` pinned (the app detects the browser locale; a headless runner defaults to `en-US` and the es-CO copy assertions failed) |
 | Screenshots | on failure (`only-on-failure`); visual smoke baseline under `tests/e2e` |
+| Baseline | `tests/e2e/visual-smoke.spec.js-snapshots/login-page-chromium-win32.png` — per platform/Chromium build |
+
+Updating the visual baseline (only after an intentional UI change):
+
+```powershell
+npx playwright test tests/e2e/visual-smoke.spec.js --update-snapshots
+```
+
+If a run prints every spec but never returns, a previous killed run left `test-results/`
+locked: delete `test-results` + `playwright-report` and run again.
 
 Ignored artifacts: `test-results/`, `playwright-report/` (see `.gitignore`).
 

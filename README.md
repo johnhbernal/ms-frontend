@@ -151,7 +151,7 @@ Admin user reset: `/admin/rbac` → Usuarios tab → modal → `POST /api/users/
 
 ### GitHub Actions gate
 
-`npm ci` → `npm test` (`CI=true`) → `npm run build`
+`npm ci` → `npm test` (`CI=true`) → `npm run lint` → `npm run build`
 
 ### Vitest (unit)
 
