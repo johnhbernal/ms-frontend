@@ -37,3 +37,7 @@ React SPA for Practica system parameters. Coordinates with `ms-auth` (JWT) and t
 |---------|---------|
 | ms-auth | `http://localhost:8081` (`VITE_AUTH_API_URL`) |
 | Practica API | `http://localhost:8082/api` (`VITE_PRACTICA_API_URL`) |
+
+## Piso transversal
+
+Skill personal `redtic-software-practices` ([Red-TIC UNAM](https://www.red-tic.unam.mx/desarrollo-de-software)) — req → diseño → construcción → QA → release → config. No sustituye las fichas de este repo.
