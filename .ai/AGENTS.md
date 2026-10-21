@@ -41,3 +41,5 @@ React SPA for Practica system parameters. Coordinates with `ms-auth` (JWT) and t
 ## Piso transversal
 
 Skill personal `redtic-software-practices` ([Red-TIC UNAM](https://www.red-tic.unam.mx/desarrollo-de-software)) — req → diseño → construcción → QA → release → config. No sustituye las fichas de este repo.
+
+**Push:** commits locales libres; `git push` solo con autorización explícita de Hawer (o cuando dé la tarea por cerrada y el gate esté verde). Un gate verde no autoriza. Este repo no despliega: el push solo corre CI. Y desde el 2026-10-22, **una tarea = un commit publicado = un push**: al cerrar se aplastan los commits locales a uno y el push es uno solo.
